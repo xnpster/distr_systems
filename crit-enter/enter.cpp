@@ -89,7 +89,7 @@ void notify_fin() {
 
     for(int dest = 0; dest < glob_size; dest++) {
         if(dest != glob_rank) {
-            MPI_Ibsend(&ans_fin, 1, MPI_INT, dest, FIN_CRIT, MPI_COMM_WORLD, add_request(fin_req));
+            MPI_Isend(&ans_fin, 1, MPI_INT, dest, FIN_CRIT, MPI_COMM_WORLD, add_request(fin_req));
         }
     }
 }
@@ -137,7 +137,7 @@ void check_entering() {
             double enter_req_timestamp;
 
             ierr = MPI_Recv(&enter_req_timestamp, 1, MPI_DOUBLE, src, ENTER_REQUEST, MPI_COMM_WORLD, &stat);
-            MPI_Ibsend(&ok_ans, 1, MPI_INT, src, ENTER_ANSWER, MPI_COMM_WORLD, add_request(ans_req));
+            MPI_Isend(&ok_ans, 1, MPI_INT, src, ENTER_ANSWER, MPI_COMM_WORLD, add_request(ans_req));
         }
     }
 
@@ -149,7 +149,7 @@ void check_entering() {
             double enter_req_timestamp;
 
             ierr = MPI_Recv(&enter_req_timestamp, 1, MPI_DOUBLE, src, ENTER_REQUEST, MPI_COMM_WORLD, &stat);
-            MPI_Ibsend(&ok_ans, 1, MPI_INT, src, ENTER_ANSWER, MPI_COMM_WORLD, add_request(ans_req));
+            MPI_Isend(&ok_ans, 1, MPI_INT, src, ENTER_ANSWER, MPI_COMM_WORLD, add_request(ans_req));
         }
     }
 
@@ -165,7 +165,7 @@ void do_critical(void (*run)()) {
     // send request for entering critical section
     for(int dest = 0; dest < glob_size; dest++) {
         if(dest != glob_rank) {
-            ierr = MPI_Ibsend(&current_time, 1, MPI_DOUBLE, dest, ENTER_REQUEST, 
+            ierr = MPI_Isend(&current_time, 1, MPI_DOUBLE, dest, ENTER_REQUEST, 
                 MPI_COMM_WORLD, add_request(enter_req));
         }
     }
@@ -211,7 +211,7 @@ void do_critical(void (*run)()) {
                 // decide whose turn it is to enter
                 if(enter_req_timestamp < current_time) {
                     // src proc
-                    MPI_Ibsend(&ok_ans, 1, MPI_INT, src, ENTER_ANSWER, MPI_COMM_WORLD, add_request(ans_req));
+                    MPI_Isend(&ok_ans, 1, MPI_INT, src, ENTER_ANSWER, MPI_COMM_WORLD, add_request(ans_req));
                 } else {
                     // this proc
                     not_answered.insert(src);
@@ -234,7 +234,7 @@ void do_critical(void (*run)()) {
 
     // resume waiting processes
     for(int dest : not_answered) {
-        MPI_Ibsend(&ok_ans, 1, MPI_INT, dest, ENTER_ANSWER, MPI_COMM_WORLD, add_request(ans_req));
+        MPI_Isend(&ok_ans, 1, MPI_INT, dest, ENTER_ANSWER, MPI_COMM_WORLD, add_request(ans_req));
     }
 
     free_requests(ans_req);
